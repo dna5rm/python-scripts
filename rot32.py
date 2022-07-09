@@ -1,19 +1,15 @@
-#!/usr/bin/env python
-
-""" ROT32 a string using Python. """
+#!/bin/env -S python
+""" Convert a string to rot13. """
 
 import sys
-ROT32_STRING = ""
 
-#print(sys.version)
-
+# Take in a string from the command line
 if not sys.stdin.isatty():
     message = sys.stdin.readlines()
 else:
     message = sys.argv[1:]
 
-#print(message)
-
+# Convert a string to rot32.
 def rot32(string):
     """ Return rot32 of a string. """
     for character in str(string):
@@ -24,8 +20,10 @@ def rot32(string):
             print((chr(ord_val+13)), end='')
         else:
             print((chr(ord_val-13)), end='')
-    return ROT32_STRING
+    return string
 
-
-for line in message:
-    print(rot32(line), end='')
+if __name__ == "__main__":
+    for line in message:
+        rot32(line)
+        print()
+    sys.exit(0)

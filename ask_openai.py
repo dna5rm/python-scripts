@@ -63,6 +63,6 @@ if __name__ == "__main__":
         No query string to send to OpenAi...
 
         Example:
-        $ play_openai.py "Write ansible task to Ensure HTTP server is not enabled using REL 8 CIS benckmark"
+        $ ask_openai.py "Write ansible task to Ensure HTTP server is not enabled using REL 8 CIS benckmark"
         """))
         sys.exit(1)

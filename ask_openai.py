@@ -45,7 +45,6 @@ def get_openai_text(task):
             top_p=0.9,
             frequency_penalty=0.0,
             presence_penalty=0.0
-
             )
     return response.choices[0].text
 

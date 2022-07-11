@@ -98,10 +98,20 @@ if __name__ == "__main__":
         datefmt='%Y-%m-%d %H:%M:%S',
         filename='ichimoku.log')
 
-    # Read PLTR data from Yahoo Finance
-    df = yf.download('PLTR', interval="15m", period="7d")
-    df.to_csv("~/yf-history.csv")
-    df = pd.read_csv("~/yf-history.csv")
+    # If the file exists, read it.
+if __name__ == "__main__":
+# Initialize logging
+    logging.basicConfig(level=logging.DEBUG, encoding="utf-8",
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        filename='ichimoku.log')
+
+    # Read historical data from Yahoo Finance
+    #df = yf.download('SPY', interval="15m", period="7d")
+    #df.to_csv('~/yf-history.csv')
+
+    # Read the data from the CSV file
+    df = pd.read_csv('~/yf-history.csv')
 
     graph = graph_candlestick(df)
     graph = overlay_ichimoku(df, 9, 26)

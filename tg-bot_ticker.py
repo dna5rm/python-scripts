@@ -37,6 +37,14 @@ def plot_data_simple(ticker, data, filename):
     plt.savefig(filename)
     plt.close()
 
+# Function to plot data as a candlestick chart
+def plot_data_candlestick(ticker, data, filename):
+    """Perform a candlestick chart plot for testing"""
+    data.plot("Datetime", ["Open", "High", "Low", "Close"], kind="candlestick")
+    plt.title(ticker + " chart")
+    plt.savefig(filename)
+    plt.close()
+
 if __name__ == "__main__":
     # Initialize logging
     logging.basicConfig(level=logging.DEBUG,
@@ -68,7 +76,7 @@ if __name__ == "__main__":
             data = pd.read_csv("~/testdata.csv")
 
             # Plot the data
-            plot_data_simple(ticker, data, filename + ".png")
+            plot_data_candlestick(ticker, data, filename + ".png")
 
             # Send the image to Telegram
             bot = tg.Bot(token=token)

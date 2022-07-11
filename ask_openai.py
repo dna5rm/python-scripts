@@ -8,22 +8,6 @@ import sys
 import textwrap
 import openai
 
-# Set environment basename for output files
-basename = os.path.splitext(os.path.basename(__file__))[0]
-
-# Read task from any type of stdin
-if not sys.stdin.isatty():
-    message = sys.stdin.readlines()
-else:
-    message = sys.argv[1:]
-
-# Initialize logging
-logfile = basename + '.log'
-logging.basicConfig(filename=logfile, encoding='utf-8', level=logging.DEBUG)
-
-# Read in the netrc file
-netrc_file = netrc.netrc()
-
 # Function to get netrc credentials
 def get_netrc_credentials(machine):
     """Fetch netrc credentials."""
@@ -49,6 +33,23 @@ def get_openai_text(task):
     return response.choices[0].text
 
 if __name__ == "__main__":
+
+    # Set environment basename for output files
+    basename = os.path.splitext(os.path.basename(__file__))[0]
+
+    # Read task from any type of stdin
+    if not sys.stdin.isatty():
+        message = sys.stdin.readlines()
+    else:
+        message = sys.argv[1:]
+
+    # Initialize logging
+    logfile = basename + '.log'
+    logging.basicConfig(filename=logfile, encoding='utf-8', level=logging.DEBUG)
+
+    # Read in the netrc file
+    netrc_file = netrc.netrc()
+
     # Get netrc credentials for OpenAI
     openai.api_key = get_netrc_credentials(basename)[1]
 

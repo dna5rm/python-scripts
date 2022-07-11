@@ -6,10 +6,9 @@ import os, logging
 import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+#import matplotlib.dates as mdates
 from mplfinance.original_flavor import candlestick_ohlc
 import yfinance as yf
-
 
 # Testing
 def graph_candlestick(dataframe, stick = "day", otherseries = None):
@@ -48,7 +47,7 @@ def graph_candlestick(dataframe, stick = "day", otherseries = None):
     return plt
 
 # Very rough
-def overlay_ichimoku(dataframe, base, period, title):
+def overlay_ichimoku(dataframe, base, period):
     """
     The Ichimoku chart shows support and resistance levels, as well as other essential
     information such as trend direction and momentum. Compared to standard candlestick
@@ -68,9 +67,7 @@ def overlay_ichimoku(dataframe, base, period, title):
     dataframe['senkou_span_b'] = senkou_span_b
     dataframe['chikou_span'] = chikou_span
 
-    #plt.figure(figsize=(16,9))
-    #plt.style.use('bmh')
-
+    # Plot the Ichimoku chart
     plt.plot(dataframe['tenkan_sen'], label='Tenkan-Sen', linewidth=0.5, color='darkorange')
     plt.plot(dataframe['kijun_sen'], label='Kijun-Sen', linewidth=0.5, color='purple')
     plt.plot(dataframe['senkou_span_a'], label='Senkou Span A', linewidth=0.5, alpha=0.05, color='grey')
@@ -89,30 +86,25 @@ def overlay_ichimoku(dataframe, base, period, title):
             where=dataframe['senkou_span_a'] < dataframe['senkou_span_b'],
             color='grey', alpha=0.2)
 
+    # Show legend on the plot
     plt.legend()
 
     return plt
-    #plt.savefig('ichimoku.png', dpi=600, bbox_inches='tight', pad_inches=0.1)
-    #plt.close()
 
+if __name__ == "__main__":
 # Initialize logging
-logging.basicConfig(level=logging.DEBUG, encoding="utf-8",
+    logging.basicConfig(level=logging.DEBUG, encoding="utf-8",
         format='%(asctime)s %(levelname)-8s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S',
         filename='ichimoku.log')
 
+    # Read PLTR data from Yahoo Finance
+    df = yf.download('PLTR', interval="15m", period="7d")
+    df.to_csv("~/yf-history.csv")
+    df = pd.read_csv("~/yf-history.csv")
 
-# Read PLTR data
-#df = yf.download('PLTR', interval="15m", period="14d")
-#df.to_csv("~/ichimoku.csv")
-df = pd.read_csv("~/ichimoku.csv")
+    graph = graph_candlestick(df)
+    graph = overlay_ichimoku(df, 9, 26)
 
-## Components of Ichimoku ##
-# https://corporatefinanceinstitute.com/resources/knowledge/trading-investing/ichimoku-cloud/
-# https://www.profitf.com/articles/forex-education/ichimoku-trading/
-
-graph = graph_candlestick(df)
-graph = overlay_ichimoku(df, 9, 26, "Ichimoku")
-
-graph.savefig('ichimoku.png', dpi=600, bbox_inches='tight', pad_inches=0.1)
-graph.close()
+    graph.savefig('chart.png', dpi=600, bbox_inches='tight', pad_inches=0.1)
+    graph.close()

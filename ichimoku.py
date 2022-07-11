@@ -7,11 +7,48 @@ import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from mplfinance.original_flavor import candlestick_ohlc
 import yfinance as yf
 
 
-# This is what I have been working on... Very rough
-def ichimoku_cloud(dataframe, base, period, title):
+# Testing
+def graph_candlestick(dataframe, stick = "day", otherseries = None):
+    """
+    Graphs a candlestick chart.
+    """
+
+    plt.figure(figsize=(12,4))
+    plt.style.use('bmh')
+    plt.title('Chart')
+    plt.ylabel('Price')
+    ax = plt.subplot(1,1,1)
+
+    #Create a new DataFrame which includes OHLC data for each period specified by stick input
+    plotdata = pd.DataFrame(
+        {
+            "Open":dataframe["Open"],
+            "High":dataframe["High"],
+            "Low":dataframe["Low"],
+            "Close":dataframe["Close"]
+        },
+    )
+
+    # Create the candelstick chart
+    candlestick_ohlc(ax, list(zip(list(plotdata.index.tolist()),
+            plotdata["Open"].tolist(),
+            plotdata["High"].tolist(),
+            plotdata["Low"].tolist(),
+            plotdata["Close"].tolist()
+        )),
+        width = 0.7,
+        colorup = "green",
+        colordown = "red"
+    )
+
+    return plt
+
+# Very rough
+def overlay_ichimoku(dataframe, base, period, title):
     """
     The Ichimoku chart shows support and resistance levels, as well as other essential
     information such as trend direction and momentum. Compared to standard candlestick
@@ -31,35 +68,32 @@ def ichimoku_cloud(dataframe, base, period, title):
     dataframe['senkou_span_b'] = senkou_span_b
     dataframe['chikou_span'] = chikou_span
 
-    plt.figure(figsize=(16,9))
+    #plt.figure(figsize=(16,9))
+    #plt.style.use('bmh')
 
-    plt.style.use('bmh')
-
-    plt.plot(dataframe['tenkan_sen'], label='Tenkan-Sen')
-    plt.plot(dataframe['kijun_sen'], label='Kijun-Sen')
-    plt.plot(dataframe['senkou_span_a'], label='Senkou Span A')
-    plt.plot(dataframe['senkou_span_b'], label='Senkou Span B')
-    plt.plot(dataframe['chikou_span'], label='Chikou Span')
+    plt.plot(dataframe['tenkan_sen'], label='Tenkan-Sen', linewidth=0.5, color='darkorange')
+    plt.plot(dataframe['kijun_sen'], label='Kijun-Sen', linewidth=0.5, color='purple')
+    plt.plot(dataframe['senkou_span_a'], label='Senkou Span A', linewidth=0.5, alpha=0.05, color='grey')
+    plt.plot(dataframe['senkou_span_b'], label='Senkou Span B', linewidth=0.75, color='red')
+    plt.plot(dataframe['chikou_span'], label='Chikou Span', linewidth=1, linestyle='dashed', alpha=0.5, color='cyan')
 
     # Plot Kumo (Cloud)
     plt.fill_between(dataframe.index,
             dataframe['senkou_span_a'],
             dataframe['senkou_span_b'],
             where=dataframe['senkou_span_a'] >= dataframe['senkou_span_b'],
-            color='orange', alpha=0.3)
+            color='orange', alpha=0.2)
     plt.fill_between(dataframe.index,
             dataframe['senkou_span_a'],
             dataframe['senkou_span_b'],
             where=dataframe['senkou_span_a'] < dataframe['senkou_span_b'],
-            color='grey', alpha=0.3)
+            color='grey', alpha=0.2)
 
-    plt.title(title)
-    plt.xlabel('Date')
-    plt.ylabel('Price')
     plt.legend()
 
-    plt.savefig('ichimoku.png', dpi=600)
-    plt.close()
+    return plt
+    #plt.savefig('ichimoku.png', dpi=600, bbox_inches='tight', pad_inches=0.1)
+    #plt.close()
 
 # Initialize logging
 logging.basicConfig(level=logging.DEBUG, encoding="utf-8",
@@ -77,4 +111,8 @@ df = pd.read_csv("~/ichimoku.csv")
 # https://corporatefinanceinstitute.com/resources/knowledge/trading-investing/ichimoku-cloud/
 # https://www.profitf.com/articles/forex-education/ichimoku-trading/
 
-ichimoku_cloud(df, 9, 26, "Ichimoku Cloud")
+graph = graph_candlestick(df)
+graph = overlay_ichimoku(df, 9, 26, "Ichimoku")
+
+graph.savefig('ichimoku.png', dpi=600, bbox_inches='tight', pad_inches=0.1)
+graph.close()

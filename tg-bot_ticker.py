@@ -5,11 +5,10 @@ import logging
 import netrc
 import tempfile
 import sys
-import matplotlib.pyplot as plt
-#import numpy as np
 import pandas as pd
 import telegram as tg
 import yfinance as yf
+import chart
 
 # Function to get netrc credentials
 def get_netrc_credentials(machine):
@@ -28,22 +27,6 @@ def silentremove(filename):
     except OSError as e:              # this would be "except OSError, e:" before Python 2.6
         if e.errno != errno.ENOENT:   # errno.ENOENT = no such file or directory
             raise                     # re-raise exception if a different error occurred
-
-# Function to create simple data plot
-def plot_data_simple(ticker, data, filename):
-    """Perform a simple data plot for testing"""
-    data.plot("Datetime", ["Open", "High", "Low", "Close"])
-    plt.title(ticker + " chart")
-    plt.savefig(filename)
-    plt.close()
-
-# Function to plot data as a candlestick chart
-def plot_data_candlestick(ticker, data, filename):
-    """Perform a candlestick chart plot for testing"""
-    data.plot("Datetime", ["Open", "High", "Low", "Close"], kind="candlestick")
-    plt.title(ticker + " chart")
-    plt.savefig(filename)
-    plt.close()
 
 if __name__ == "__main__":
     # Initialize logging
@@ -70,21 +53,27 @@ if __name__ == "__main__":
 
         img, filename = tempfile.mkstemp()
         try:
-            #data = yf.download(ticker, interval="15m", period="7d")
-            #data.to_csv(filename + ".csv")
 
-            data = pd.read_csv("~/testdata.csv")
+            # Read historical data from Yahoo Finance
+            df = yf.download(ticker, interval='15m', period='7d')
+            df.to_csv(filename + '.csv')
 
-            # Plot the data
-            plot_data_candlestick(ticker, data, filename + ".png")
+            # Read the data from the CSV file
+            df = pd.read_csv(filename + '.csv')
+
+            graph = chart.graph_candlestick(df, ticker=ticker)
+            graph = chart.overlay_ichimoku(df, 9, 26)
+
+            graph.savefig(filename + '.png', dpi=600, bbox_inches='tight', pad_inches=0.1)
+            graph.close()
 
             # Send the image to Telegram
             bot = tg.Bot(token=token)
             bot.send_photo(chat_id=chat_id,
-                    photo=open(filename + ".png", 'rb'),
-                    caption=ticker + " chart")
+                    photo=open(filename + '.png', 'rb'),
+                    caption=ticker + ' chart')
         finally:
-            for file in [filename, filename + ".csv", filename + ".png"]:
+            for file in [filename, filename + '.csv', filename + '.png']:
                 silentremove(file)
 
     exit(0)

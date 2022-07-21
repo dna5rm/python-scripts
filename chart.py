@@ -31,7 +31,7 @@ def graph_candlestick(dataframe, *args, **kwargs):
     #plt.xlabel('Date', fontsize=6)
     #plt.ylabel('Price', fontsize=6, color='grey')
 
-    ax = plt.subplot(1,1,1)
+    ax1 = plt.subplot(1,1,1)
 
     #Create a new DataFrame which includes OHLC data for each period specified by stick input
     plotdata = pd.DataFrame(
@@ -44,7 +44,7 @@ def graph_candlestick(dataframe, *args, **kwargs):
     )
 
     # Create the candelstick chart
-    candlestick_ohlc(ax, list(zip(list(plotdata.index.tolist()),
+    candlestick_ohlc(ax1, list(zip(list(plotdata.index.tolist()),
             plotdata["Open"].tolist(),
             plotdata["High"].tolist(),
             plotdata["Low"].tolist(),
@@ -54,6 +54,10 @@ def graph_candlestick(dataframe, *args, **kwargs):
         colorup = "green",
         colordown = "red"
     )
+
+    ax1.text(0.01, 0.04, 'interval: 15m\nperiod: 7d', transform=ax1.transAxes,
+        fontsize=6, color='gray', alpha=0.5,
+        ha='left', va='bottom')
 
     return plt
 
@@ -66,7 +70,7 @@ def overlay_ichimoku(dataframe, base, period):
     forecast price moves.
     """
 
-    plt.title('Ichimoku', loc='right', fontsize=8, color='grey')
+    plt.title('Ichimoku', loc='right', fontsize=8, color='darkblue')
 
     tenkan_sen = ((dataframe['High'] + dataframe['Low'])/2).rolling(base).mean()
     kijun_sen = ((dataframe['High'] + dataframe['Low'])/2).rolling(period).mean()
@@ -104,8 +108,6 @@ def overlay_ichimoku(dataframe, base, period):
 
     return plt
 
-    return plt
-
 if __name__ == "__main__":
 # Initialize logging
     logging.basicConfig(level=logging.DEBUG, encoding="utf-8",
@@ -113,19 +115,11 @@ if __name__ == "__main__":
         datefmt='%Y-%m-%d %H:%M:%S',
         filename='ichimoku.log')
 
-    # If the file exists, read it.
-if __name__ == "__main__":
-# Initialize logging
-    logging.basicConfig(level=logging.DEBUG, encoding="utf-8",
-        format='%(asctime)s %(levelname)-8s %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
-        filename='ichimoku.log')
-
-    ticker = "PLTR"
+    ticker = "AKAM"
 
     # Read historical data from Yahoo Finance
-    #df = yf.download(ticker, interval="15m", period="7d")
-    #df.to_csv('~/yf-history.csv')
+    df = yf.download(ticker, interval="15m", period="7d")
+    df.to_csv('~/yf-history.csv')
 
     # Read the data from the CSV file
     df = pd.read_csv('~/yf-history.csv')

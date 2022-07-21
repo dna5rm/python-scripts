@@ -109,17 +109,17 @@ def overlay_ichimoku(dataframe, base, period):
     return plt
 
 if __name__ == "__main__":
-# Initialize logging
+    # Initialize logging
     logging.basicConfig(level=logging.DEBUG, encoding="utf-8",
         format='%(asctime)s %(levelname)-8s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S',
-        filename='ichimoku.log')
+        filename='chart.log')
 
-    ticker = "AKAM"
+    ticker = "SPY"
 
     # Read historical data from Yahoo Finance
-    df = yf.download(ticker, interval="15m", period="7d")
-    df.to_csv('~/yf-history.csv')
+    #df = yf.download(ticker, interval="15m", period="7d")
+    #df.to_csv('~/yf-history.csv')
 
     # Read the data from the CSV file
     df = pd.read_csv('~/yf-history.csv')
@@ -127,5 +127,5 @@ if __name__ == "__main__":
     graph = graph_candlestick(df, ticker=ticker)
     graph = overlay_ichimoku(df, 9, 26)
 
-    graph.savefig('chart.png', dpi=600, bbox_inches='tight', pad_inches=0.1)
+    graph.savefig("chart.png", dpi=600, bbox_inches='tight', pad_inches=0.1)
     graph.close()

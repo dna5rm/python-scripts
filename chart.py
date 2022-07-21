@@ -1,5 +1,7 @@
 #!/bin/env -S python3
-""" ichimoki.py - A play script to generate an ichimoku chart. """
+"""
+chart.py - A module to create various stock analaysis charts.
+"""
 
 # Import packages
 import os, logging
@@ -11,7 +13,7 @@ from mplfinance.original_flavor import candlestick_ohlc
 import numpy as np
 import yfinance as yf
 
-# Function to create a candlestick_ohlc chart using mplfinance.
+# Function to create a candlestick_ohlc base chart using mplfinance.
 def graph_candlestick(dataframe, *args, **kwargs):
     """
     Graphs a candlestick_ohlc chart using mplfinance.
@@ -19,14 +21,15 @@ def graph_candlestick(dataframe, *args, **kwargs):
 
     # keywords & vars
     ticker = kwargs.get('ticker', '')
+    interval = kwargs.get('interval', 'NaN')
+    period = kwargs.get('period', 'NaN')
     xdate = [dt.datetime.strptime(x[:-6], '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d\n%A') for x in dataframe.Datetime]
-
 
     plt.figure(figsize=(12,3))
     plt.style.use('bmh')
     plt.title('{}'.format(ticker), loc='left')
 
-    plt.xticks(np.arange(0, len(dataframe), step=28), xdate[::28], rotation=45, fontsize=8)
+    plt.xticks(np.arange(0, len(dataframe), step=28), xdate[::28], fontsize=8, rotation=45)
 
     #plt.xlabel('Date', fontsize=6)
     #plt.ylabel('Price', fontsize=6, color='grey')
@@ -55,14 +58,52 @@ def graph_candlestick(dataframe, *args, **kwargs):
         colordown = "red"
     )
 
-    ax1.text(0.01, 0.04, 'interval: 15m\nperiod: 7d', transform=ax1.transAxes,
-        fontsize=6, color='gray', alpha=0.5,
+    ax1.text(0.01, 0.04, 'interval: ' + interval + '\nperiod: ' + period,
+        transform=ax1.transAxes, fontsize=6, color='gray', alpha=0.5,
         ha='left', va='bottom')
 
     return plt
 
-# Very rough
-def overlay_ichimoku(dataframe, base, period):
+# Function to create a Bollinger Bands overlay chart
+def overlay_bollinger(dataframe, *args, **kwargs):
+    """
+    A Bollinger Band is a set of trendlines plotted two standard deviations
+    (positively and negatively) away from a simple moving average (SMA) of a
+    security's price.
+    """
+
+    # keywords & vars
+    num_of_std  = kwargs.get('num_of_std', 2)
+    window_size = kwargs.get('window_size', 20)
+
+    # plot chart type in title
+    plt.title('Bollinger Bands', loc='right', fontsize=8, color='darkblue')
+
+    # create rolling mean and standard deviation
+    rolling_mean = dataframe['Close'].rolling(window=window_size).mean()
+    rolling_std = dataframe['Close'].rolling(window=window_size).std()
+
+    # create upper and lower bands
+    upper_band = rolling_mean + (rolling_std * num_of_std)
+    lower_band = rolling_mean - (rolling_std * num_of_std)
+
+    # plot stock data, rolling mean and Bollinger Bands
+    plt.plot(rolling_mean, label='Rolling Mean', linewidth=0.5, linestyle='dashed', color='gray')
+    plt.plot(upper_band, label='Upper band', linewidth=0.5, color='blue')
+    plt.plot(lower_band, label='Lower band', linewidth=0.5, color='purple')
+
+    plt.fill_between(dataframe.index,
+        upper_band, lower_band,
+        where=upper_band > lower_band,
+        color='lightgrey', alpha=0.2)
+
+    # Show legend on the plot
+    plt.legend(loc='upper left', fontsize=8)
+
+    return plt
+
+# Function to create an Ichimoku overlay chart.
+def overlay_ichimoku(dataframe, *args, **kwargs):
     """
     The Ichimoku chart shows support and resistance levels, as well as other essential
     information such as trend direction and momentum. Compared to standard candlestick
@@ -70,7 +111,12 @@ def overlay_ichimoku(dataframe, base, period):
     forecast price moves.
     """
 
-    plt.title('Ichimoku', loc='right', fontsize=8, color='darkblue')
+    # keywords & vars
+    base   = kwargs.get('num_of_std', 9)
+    period = kwargs.get('window_size', 26)
+
+    # plot chart type in title
+    plt.title('Ichimoku Cloud', loc='right', fontsize=8, color='darkblue')
 
     tenkan_sen = ((dataframe['High'] + dataframe['Low'])/2).rolling(base).mean()
     kijun_sen = ((dataframe['High'] + dataframe['Low'])/2).rolling(period).mean()
@@ -93,15 +139,33 @@ def overlay_ichimoku(dataframe, base, period):
 
     # Plot Kumo (Cloud)
     plt.fill_between(dataframe.index,
-            dataframe['senkou_span_a'],
-            dataframe['senkou_span_b'],
-            where=dataframe['senkou_span_a'] >= dataframe['senkou_span_b'],
-            color='orange', alpha=0.2)
+        dataframe['senkou_span_a'], dataframe['senkou_span_b'],
+        where=dataframe['senkou_span_a'] >= dataframe['senkou_span_b'],
+        color='orange', alpha=0.2)
     plt.fill_between(dataframe.index,
-            dataframe['senkou_span_a'],
-            dataframe['senkou_span_b'],
-            where=dataframe['senkou_span_a'] < dataframe['senkou_span_b'],
-            color='grey', alpha=0.2)
+        dataframe['senkou_span_a'], dataframe['senkou_span_b'],
+        where=dataframe['senkou_span_a'] < dataframe['senkou_span_b'],
+        color='grey', alpha=0.2)
+
+    # Show legend on the plot
+    plt.legend(loc='upper left', fontsize=8)
+
+    return plt
+
+# Function to create a VWAP overlay chart.
+def overlay_vwap(dataframe):
+    """
+    VWAP represents the average price a security has traded at throughout the day, based on both volume and price.
+    """
+
+    # plot chart type in title
+    plt.title('Volume-Weighted Average Price', loc='right', fontsize=8, color='darkblue')
+
+    # create vwap
+    dataframe['VWAP'] = (dataframe['Close'] * dataframe['Volume']).cumsum() / dataframe['Volume'].cumsum()
+
+    # plot stock data, rolling mean and Bollinger Bands
+    plt.plot(dataframe['VWAP'], label='VWAP', linewidth=0.8, color='blue')
 
     # Show legend on the plot
     plt.legend(loc='upper left', fontsize=8)
@@ -115,17 +179,21 @@ if __name__ == "__main__":
         datefmt='%Y-%m-%d %H:%M:%S',
         filename='chart.log')
 
-    ticker = "SPY"
+    ticker   = "SPY"
+    interval = "15m"
+    period   = "14d"
 
     # Read historical data from Yahoo Finance
-    #df = yf.download(ticker, interval="15m", period="7d")
+    #df = yf.download(ticker, interval=interval, period=period)
     #df.to_csv('~/yf-history.csv')
 
     # Read the data from the CSV file
     df = pd.read_csv('~/yf-history.csv')
 
-    graph = graph_candlestick(df, ticker=ticker)
-    graph = overlay_ichimoku(df, 9, 26)
+    graph = graph_candlestick(df, ticker=ticker, interval=interval, period=period)
+    graph = overlay_bollinger(df)
+    #graph = overlay_ichimoku(df)
+    #graph = overlay_vwap(df)
 
     graph.savefig("chart.png", dpi=600, bbox_inches='tight', pad_inches=0.1)
     graph.close()

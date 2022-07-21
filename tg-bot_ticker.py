@@ -36,6 +36,9 @@ if __name__ == "__main__":
             filename=os.path.splitext(os.path.basename(__file__))[0] + ".log",
             encoding='utf-8')
 
+    interval = "15m"
+    period   = "14d"
+
     # Read task from any type of stdin
     if not sys.stdin.isatty():
         stdin = sys.stdin.readlines()
@@ -55,15 +58,19 @@ if __name__ == "__main__":
         try:
 
             # Read historical data from Yahoo Finance
-            df = yf.download(ticker, interval='15m', period='7d')
+            df = yf.download(ticker, interval=interval, period=period)
             df.to_csv(filename + '.csv')
 
             # Read the data from the CSV file
             df = pd.read_csv(filename + '.csv')
 
-            graph = chart.graph_candlestick(df, ticker=ticker)
-            graph = chart.overlay_ichimoku(df, 9, 26)
+            # Plot the data
+            graph = chart.graph_candlestick(df, ticker=ticker, interval=interval, period=period)
+            graph = chart.overlay_bollinger(df)
+            #graph = chart.overlay_ichimoku(df)
+            #graph = chart.overlay_vwap(df)
 
+            # Save the graph to a temporary file
             graph.savefig(filename + '.png', dpi=600, bbox_inches='tight', pad_inches=0.1)
             graph.close()
 

@@ -128,7 +128,7 @@ if __name__ == "__main__":
     df = pd.read_csv('~/yf-history.csv')
 
     graph = graph_candlestick(df, ticker=ticker)
-    #graph = overlay_ichimoku(df, 9, 26)
+    graph = overlay_ichimoku(df, 9, 26)
 
     graph.savefig('chart.png', dpi=600, bbox_inches='tight', pad_inches=0.1)
     graph.close()

@@ -25,12 +25,11 @@ def graph_candlestick(dataframe, *args, **kwargs):
     plt.figure(figsize=(12,3))
     plt.style.use('bmh')
     plt.title('{}'.format(ticker), loc='left')
-    plt.title('{}'.format(dataframe.Datetime.iloc[-1])[:-6], loc='right', fontsize=8, color='grey')
 
-    plt.xticks(np.arange(0, len(dataframe), step=28), xdate[::28], rotation=45)
+    plt.xticks(np.arange(0, len(dataframe), step=28), xdate[::28], rotation=45, fontsize=8)
 
-    plt.xlabel('Date')
-    plt.ylabel('Price/USD')
+    #plt.xlabel('Date', fontsize=6)
+    #plt.ylabel('Price', fontsize=6, color='grey')
 
     ax = plt.subplot(1,1,1)
 
@@ -67,6 +66,8 @@ def overlay_ichimoku(dataframe, base, period):
     forecast price moves.
     """
 
+    plt.title('Ichimoku', loc='right', fontsize=8, color='grey')
+
     tenkan_sen = ((dataframe['High'] + dataframe['Low'])/2).rolling(base).mean()
     kijun_sen = ((dataframe['High'] + dataframe['Low'])/2).rolling(period).mean()
     senkou_span_a = ((tenkan_sen + kijun_sen)/2).shift(period)
@@ -99,7 +100,9 @@ def overlay_ichimoku(dataframe, base, period):
             color='grey', alpha=0.2)
 
     # Show legend on the plot
-    plt.legend()
+    plt.legend(loc='upper left', fontsize=8)
+
+    return plt
 
     return plt
 

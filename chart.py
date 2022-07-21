@@ -6,20 +6,32 @@ import os, logging
 import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
-#import matplotlib.dates as mdates
+import matplotlib.ticker as ticker
 from mplfinance.original_flavor import candlestick_ohlc
+import numpy as np
 import yfinance as yf
 
-# Testing
-def graph_candlestick(dataframe, stick = "day", otherseries = None):
+# Function to create a candlestick_ohlc chart using mplfinance.
+def graph_candlestick(dataframe, *args, **kwargs):
     """
-    Graphs a candlestick chart.
+    Graphs a candlestick_ohlc chart using mplfinance.
     """
 
-    plt.figure(figsize=(12,4))
+    # keywords & vars
+    ticker = kwargs.get('ticker', '')
+    xdate = [dt.datetime.strptime(x[:-6], '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d\n%A') for x in dataframe.Datetime]
+
+
+    plt.figure(figsize=(12,3))
     plt.style.use('bmh')
-    plt.title('Chart')
-    plt.ylabel('Price')
+    plt.title('{}'.format(ticker), loc='left')
+    plt.title('{}'.format(dataframe.Datetime.iloc[-1])[:-6], loc='right', fontsize=8, color='grey')
+
+    plt.xticks(np.arange(0, len(dataframe), step=28), xdate[::28], rotation=45)
+
+    plt.xlabel('Date')
+    plt.ylabel('Price/USD')
+
     ax = plt.subplot(1,1,1)
 
     #Create a new DataFrame which includes OHLC data for each period specified by stick input
@@ -29,7 +41,7 @@ def graph_candlestick(dataframe, stick = "day", otherseries = None):
             "High":dataframe["High"],
             "Low":dataframe["Low"],
             "Close":dataframe["Close"]
-        },
+        }
     )
 
     # Create the candelstick chart
@@ -39,7 +51,7 @@ def graph_candlestick(dataframe, stick = "day", otherseries = None):
             plotdata["Low"].tolist(),
             plotdata["Close"].tolist()
         )),
-        width = 0.7,
+        width = 0.55,
         colorup = "green",
         colordown = "red"
     )
@@ -106,15 +118,17 @@ if __name__ == "__main__":
         datefmt='%Y-%m-%d %H:%M:%S',
         filename='ichimoku.log')
 
+    ticker = "PLTR"
+
     # Read historical data from Yahoo Finance
-    #df = yf.download('SPY', interval="15m", period="7d")
+    #df = yf.download(ticker, interval="15m", period="7d")
     #df.to_csv('~/yf-history.csv')
 
     # Read the data from the CSV file
     df = pd.read_csv('~/yf-history.csv')
 
-    graph = graph_candlestick(df)
-    graph = overlay_ichimoku(df, 9, 26)
+    graph = graph_candlestick(df, ticker=ticker)
+    #graph = overlay_ichimoku(df, 9, 26)
 
     graph.savefig('chart.png', dpi=600, bbox_inches='tight', pad_inches=0.1)
     graph.close()

@@ -6,10 +6,10 @@ chart.py - A module to create various stock analaysis charts.
 # Import packages
 import os
 import logging
-import datetime as dt
-import pandas as pd
-import numpy as np
-import yfinance as yf
+from datetime import datetime
+import pandas
+import numpy
+import yfinance
 from matplotlib import pyplot
 from mplfinance.original_flavor import candlestick_ohlc
 
@@ -24,14 +24,14 @@ def graph_candlestick(dataframe, **kwargs):
     interval = kwargs.get('interval', 'NaN')
     period = kwargs.get('period', 'NaN')
 
-    xdate = [dt.datetime.strptime(x[:-6],
+    xdate = [datetime.strptime(x[:-6],
         '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d\n%A') for x in dataframe.Datetime]
 
     pyplot.figure(figsize=(12,3))
     pyplot.style.use('bmh')
     pyplot.title(f'{symbol}', loc='left')
 
-    pyplot.xticks(np.arange(0, len(dataframe), step=28), xdate[::28], fontsize=8, rotation=45)
+    pyplot.xticks(numpy.arange(0, len(dataframe), step=28), xdate[::28], fontsize=8, rotation=45)
 
     #pyplot.xlabel('Date', fontsize=6)
     #pyplot.ylabel('Price', fontsize=6, color='grey')
@@ -39,7 +39,7 @@ def graph_candlestick(dataframe, **kwargs):
     ax1 = pyplot.subplot(1,1,1)
 
     #Create a new DataFrame which includes OHLC data for each period specified by stick input
-    plotdata = pd.DataFrame(
+    plotdata = pandas.DataFrame(
         {
             "Open":dataframe["Open"],
             "High":dataframe["High"],
@@ -202,17 +202,17 @@ if __name__ == "__main__":
     # Read historical data from Yahoo Finance
     csvfile = os.path.expanduser(f'~/public_html/{basename}.csv')
     if not os.path.exists(csvfile):
-        df = yf.download(SYMBOL, interval=INTERVAL, period=PERIOD)
+        df = yfinance.download(SYMBOL, interval=INTERVAL, period=PERIOD)
         df.to_csv(csvfile)
 
     # Read the data from the CSV file
-    df = pd.read_csv(csvfile)
+    df = pandas.read_csv(csvfile)
 
     # Plot the data
     graph = graph_candlestick(df, symbol=SYMBOL, interval=INTERVAL, period=PERIOD)
-    #graph = overlay_bollinger(df)
+    graph = overlay_bollinger(df)
     #graph = overlay_ichimoku(df)
-    graph = overlay_vwap(df)
+    #graph = overlay_vwap(df)
 
     # Save the plot to a PNG file
     pngfile = os.path.expanduser(f'~/public_html/{basename}.png')

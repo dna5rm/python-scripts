@@ -33,7 +33,6 @@ def get_openai_text(task):
     return response.choices[0].text
 
 if __name__ == "__main__":
-
     # Set environment basename for output files
     basename = os.path.splitext(os.path.basename(__file__))[0]
 

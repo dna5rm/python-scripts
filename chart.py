@@ -4,37 +4,39 @@ chart.py - A module to create various stock analaysis charts.
 """
 
 # Import packages
-import os, logging
+import os
+import logging
 import datetime as dt
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-from mplfinance.original_flavor import candlestick_ohlc
 import numpy as np
 import yfinance as yf
+from matplotlib import pyplot
+from mplfinance.original_flavor import candlestick_ohlc
 
 # Function to create a candlestick_ohlc base chart using mplfinance.
-def graph_candlestick(dataframe, *args, **kwargs):
+def graph_candlestick(dataframe, **kwargs):
     """
     Graphs a candlestick_ohlc chart using mplfinance.
     """
 
     # keywords & vars
-    ticker = kwargs.get('ticker', '')
+    symbol = kwargs.get('symbol', '')
     interval = kwargs.get('interval', 'NaN')
     period = kwargs.get('period', 'NaN')
-    xdate = [dt.datetime.strptime(x[:-6], '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d\n%A') for x in dataframe.Datetime]
 
-    plt.figure(figsize=(12,3))
-    plt.style.use('bmh')
-    plt.title('{}'.format(ticker), loc='left')
+    xdate = [dt.datetime.strptime(x[:-6],
+        '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d\n%A') for x in dataframe.Datetime]
 
-    plt.xticks(np.arange(0, len(dataframe), step=28), xdate[::28], fontsize=8, rotation=45)
+    pyplot.figure(figsize=(12,3))
+    pyplot.style.use('bmh')
+    pyplot.title(f'{symbol}', loc='left')
 
-    #plt.xlabel('Date', fontsize=6)
-    #plt.ylabel('Price', fontsize=6, color='grey')
+    pyplot.xticks(np.arange(0, len(dataframe), step=28), xdate[::28], fontsize=8, rotation=45)
 
-    ax1 = plt.subplot(1,1,1)
+    #pyplot.xlabel('Date', fontsize=6)
+    #pyplot.ylabel('Price', fontsize=6, color='grey')
+
+    ax1 = pyplot.subplot(1,1,1)
 
     #Create a new DataFrame which includes OHLC data for each period specified by stick input
     plotdata = pd.DataFrame(
@@ -58,14 +60,14 @@ def graph_candlestick(dataframe, *args, **kwargs):
         colordown = "red"
     )
 
-    ax1.text(0.01, 0.04, 'interval: ' + interval + '\nperiod: ' + period,
+    ax1.text(0.01, 0.04, f'interval: {interval}\nperiod: {period}',
         transform=ax1.transAxes, fontsize=6, color='gray', alpha=0.5,
         ha='left', va='bottom')
 
-    return plt
+    return pyplot
 
 # Function to create a Bollinger Bands overlay chart
-def overlay_bollinger(dataframe, *args, **kwargs):
+def overlay_bollinger(dataframe, **kwargs):
     """
     A Bollinger Band is a set of trendlines plotted two standard deviations
     (positively and negatively) away from a simple moving average (SMA) of a
@@ -77,7 +79,7 @@ def overlay_bollinger(dataframe, *args, **kwargs):
     window_size = kwargs.get('window_size', 20)
 
     # plot chart type in title
-    plt.title('Bollinger Bands', loc='right', fontsize=8, color='darkblue')
+    pyplot.title('Bollinger Bands', loc='right', fontsize=8, color='darkblue')
 
     # create rolling mean and standard deviation
     rolling_mean = dataframe['Close'].rolling(window=window_size).mean()
@@ -88,22 +90,22 @@ def overlay_bollinger(dataframe, *args, **kwargs):
     lower_band = rolling_mean - (rolling_std * num_of_std)
 
     # plot stock data, rolling mean and Bollinger Bands
-    plt.plot(rolling_mean, label='Rolling Mean', linewidth=0.5, linestyle='dashed', color='gray')
-    plt.plot(upper_band, label='Upper band', linewidth=0.5, color='blue')
-    plt.plot(lower_band, label='Lower band', linewidth=0.5, color='purple')
+    pyplot.plot(rolling_mean, label='Rolling Mean', linewidth=0.5, linestyle='dashed', color='gray')
+    pyplot.plot(upper_band, label='Upper band', linewidth=0.5, color='blue')
+    pyplot.plot(lower_band, label='Lower band', linewidth=0.5, color='purple')
 
-    plt.fill_between(dataframe.index,
+    pyplot.fill_between(dataframe.index,
         upper_band, lower_band,
         where=upper_band > lower_band,
         color='lightgrey', alpha=0.2)
 
     # Show legend on the plot
-    plt.legend(loc='upper left', fontsize=8)
+    pyplot.legend(loc='upper left', fontsize=8)
 
-    return plt
+    return pyplot
 
 # Function to create an Ichimoku overlay chart.
-def overlay_ichimoku(dataframe, *args, **kwargs):
+def overlay_ichimoku(dataframe, **kwargs):
     """
     The Ichimoku chart shows support and resistance levels, as well as other essential
     information such as trend direction and momentum. Compared to standard candlestick
@@ -116,8 +118,9 @@ def overlay_ichimoku(dataframe, *args, **kwargs):
     period = kwargs.get('window_size', 26)
 
     # plot chart type in title
-    plt.title('Ichimoku Cloud', loc='right', fontsize=8, color='darkblue')
+    pyplot.title('Ichimoku Cloud', loc='right', fontsize=8, color='darkblue')
 
+    # calculate ichimoku data
     tenkan_sen = ((dataframe['High'] + dataframe['Low'])/2).rolling(base).mean()
     kijun_sen = ((dataframe['High'] + dataframe['Low'])/2).rolling(period).mean()
     senkou_span_a = ((tenkan_sen + kijun_sen)/2).shift(period)
@@ -131,69 +134,87 @@ def overlay_ichimoku(dataframe, *args, **kwargs):
     dataframe['chikou_span'] = chikou_span
 
     # Plot the Ichimoku chart
-    plt.plot(dataframe['tenkan_sen'], label='Tenkan-Sen', linewidth=0.5, color='darkorange')
-    plt.plot(dataframe['kijun_sen'], label='Kijun-Sen', linewidth=0.5, color='purple')
-    plt.plot(dataframe['senkou_span_a'], label='Senkou Span A', linewidth=0.5, alpha=0.05, color='grey')
-    plt.plot(dataframe['senkou_span_b'], label='Senkou Span B', linewidth=0.75, color='red')
-    plt.plot(dataframe['chikou_span'], label='Chikou Span', linewidth=1, linestyle='dashed', alpha=0.5, color='cyan')
+    pyplot.plot(dataframe['tenkan_sen'], label='Tenkan-Sen',
+            linewidth=0.5, color='darkorange')
+    pyplot.plot(dataframe['kijun_sen'], label='Kijun-Sen',
+            linewidth=0.5, color='purple')
+    pyplot.plot(dataframe['senkou_span_a'], label='Senkou Span A',
+            linewidth=0.5, alpha=0.05, color='grey')
+    pyplot.plot(dataframe['senkou_span_b'], label='Senkou Span B',
+            linewidth=0.75, color='red')
+    pyplot.plot(dataframe['chikou_span'], label='Chikou Span',
+            linewidth=1, linestyle='dashed', alpha=0.5, color='cyan')
 
     # Plot Kumo (Cloud)
-    plt.fill_between(dataframe.index,
+    pyplot.fill_between(dataframe.index,
         dataframe['senkou_span_a'], dataframe['senkou_span_b'],
         where=dataframe['senkou_span_a'] >= dataframe['senkou_span_b'],
         color='orange', alpha=0.2)
-    plt.fill_between(dataframe.index,
+    pyplot.fill_between(dataframe.index,
         dataframe['senkou_span_a'], dataframe['senkou_span_b'],
         where=dataframe['senkou_span_a'] < dataframe['senkou_span_b'],
         color='grey', alpha=0.2)
 
     # Show legend on the plot
-    plt.legend(loc='upper left', fontsize=8)
+    pyplot.legend(loc='upper left', fontsize=8)
 
-    return plt
+    return pyplot
 
 # Function to create a VWAP overlay chart.
 def overlay_vwap(dataframe):
     """
-    VWAP represents the average price a security has traded at throughout the day, based on both volume and price.
+    VWAP represents the average price a security has traded at throughout the day,
+    based on both volume and price.
     """
 
     # plot chart type in title
-    plt.title('Volume-Weighted Average Price', loc='right', fontsize=8, color='darkblue')
+    pyplot.title('Volume-Weighted Average Price', loc='right', fontsize=8, color='darkblue')
 
-    # create vwap
-    dataframe['VWAP'] = (dataframe['Close'] * dataframe['Volume']).cumsum() / dataframe['Volume'].cumsum()
+    # create VWAP column
+    dataframe['VWAP'] = (dataframe['Close'] * dataframe['Volume']).cumsum() \
+                            / dataframe['Volume'].cumsum()
 
-    # plot stock data, rolling mean and Bollinger Bands
-    plt.plot(dataframe['VWAP'], label='VWAP', linewidth=0.8, color='blue')
+    # plot VWAP data
+    pyplot.plot(dataframe['VWAP'], label='VWAP', linewidth=0.8, color='blue')
 
     # Show legend on the plot
-    plt.legend(loc='upper left', fontsize=8)
+    pyplot.legend(loc='upper left', fontsize=8)
 
-    return plt
+    return pyplot
 
 if __name__ == "__main__":
+
+    # Set environment basename for output files
+    basename = os.path.splitext(os.path.basename(__file__))[0]
+
     # Initialize logging
+    logfile = os.path.expanduser(f'~/public_html/{basename}.log')
     logging.basicConfig(level=logging.DEBUG, encoding="utf-8",
         format='%(asctime)s %(levelname)-8s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S',
-        filename='chart.log')
+        filename=logfile)
 
-    ticker   = "SPY"
-    interval = "15m"
-    period   = "14d"
+    # Test Constant Variables
+    SYMBOL   = "SPY"
+    INTERVAL = "15m"
+    PERIOD   = "14d"
 
     # Read historical data from Yahoo Finance
-    #df = yf.download(ticker, interval=interval, period=period)
-    #df.to_csv('~/yf-history.csv')
+    csvfile = os.path.expanduser(f'~/public_html/{basename}.csv')
+    if not os.path.exists(csvfile):
+        df = yf.download(SYMBOL, interval=INTERVAL, period=PERIOD)
+        df.to_csv(csvfile)
 
     # Read the data from the CSV file
-    df = pd.read_csv('~/yf-history.csv')
+    df = pd.read_csv(csvfile)
 
-    graph = graph_candlestick(df, ticker=ticker, interval=interval, period=period)
-    graph = overlay_bollinger(df)
+    # Plot the data
+    graph = graph_candlestick(df, symbol=SYMBOL, interval=INTERVAL, period=PERIOD)
+    #graph = overlay_bollinger(df)
     #graph = overlay_ichimoku(df)
-    #graph = overlay_vwap(df)
+    graph = overlay_vwap(df)
 
-    graph.savefig("chart.png", dpi=600, bbox_inches='tight', pad_inches=0.1)
+    # Save the plot to a PNG file
+    pngfile = os.path.expanduser(f'~/public_html/{basename}.png')
+    graph.savefig(pngfile, dpi=600, bbox_inches='tight', pad_inches=0.1)
     graph.close()

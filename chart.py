@@ -1,6 +1,6 @@
 #!/bin/env -S python3
 """
-chart.py - A module to create various stock analaysis charts.
+Python functions to create various stock analaysis charts.
 """
 
 # Import packages
@@ -198,7 +198,7 @@ if __name__ == "__main__":
         filename=logfile)
 
     # Test Constant Variables
-    SYMBOL   = "SPY"
+    SYMBOL   = "SNAP"
     INTERVAL = "15m"
     PERIOD   = "14d"
 
@@ -213,7 +213,7 @@ if __name__ == "__main__":
 
     # Plot the data
     graph = graph_candlestick(df, symbol=SYMBOL, interval=INTERVAL, period=PERIOD)
-    grahp = overlay_vwap(df)
+    #grahp = overlay_vwap(df)
     #graph = overlay_bollinger(df)
     graph = overlay_ichimoku(df)
 

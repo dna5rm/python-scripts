@@ -1,6 +1,6 @@
 #!/bin/env -S python3
 """
-tg_ticker.py - command a bot to post a stock chart to telegram.
+Command a bot to post a stock chart to telegram.
 """
 
 import os

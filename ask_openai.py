@@ -1,5 +1,5 @@
 #!/bin/env -S python3
-"""OpenAI query & response script."""
+""" OpenAI query & response script. """
 
 import logging
 import netrc
@@ -10,7 +10,7 @@ import openai
 
 # Function to get netrc credentials
 def get_netrc_credentials(machine):
-    """Fetch netrc credentials."""
+    """ Fetch netrc credentials. """
     try:
         machine_details = netrc_file.hosts[machine]
         return machine_details[0], machine_details[2]
@@ -19,7 +19,7 @@ def get_netrc_credentials(machine):
 
 # Function to ask OpenAI a question
 def get_openai_text(task):
-    """OpenAI query for task."""
+    """ OpenAI query for task. """
     logging.info("OpenAi task: %s", task)
     response = openai.Completion.create(
             model="text-davinci-002",

@@ -27,7 +27,7 @@ def graph_candlestick(dataframe, **kwargs):
     xdate = [datetime.strptime(x[:-6],
         '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d\n%A') for x in dataframe.Datetime]
 
-    pyplot.figure(figsize=(12,3))
+    pyplot.figure(figsize=(12,3), dpi=80)
     pyplot.style.use('bmh')
     pyplot.title(f'{symbol}', loc='left')
 
@@ -37,6 +37,7 @@ def graph_candlestick(dataframe, **kwargs):
     #pyplot.ylabel('Price', fontsize=6, color='grey')
 
     ax1 = pyplot.subplot(1,1,1)
+    ax1.yaxis.tick_right()
 
     #Create a new DataFrame which includes OHLC data for each period specified by stick input
     plotdata = pandas.DataFrame(
@@ -79,7 +80,7 @@ def overlay_bollinger(dataframe, **kwargs):
     window_size = kwargs.get('window_size', 20)
 
     # plot chart type in title
-    pyplot.title('Bollinger Bands', loc='right', fontsize=8, color='darkblue')
+    pyplot.title('Bollinger Bands', loc='right', fontsize=6, color='darkblue')
 
     # create rolling mean and standard deviation
     rolling_mean = dataframe['Close'].rolling(window=window_size).mean()
@@ -100,7 +101,7 @@ def overlay_bollinger(dataframe, **kwargs):
         color='lightgrey', alpha=0.2)
 
     # Show legend on the plot
-    pyplot.legend(loc='upper left', fontsize=8)
+    pyplot.legend(loc='upper left', fontsize=6)
 
     return pyplot
 
@@ -113,50 +114,53 @@ def overlay_ichimoku(dataframe, **kwargs):
     forecast price moves.
     """
 
-    # keywords & vars
-    base   = kwargs.get('num_of_std', 9)
-    period = kwargs.get('window_size', 26)
+    # Keywords & vars
+    tenkan   = kwargs.get('tenkan', 9)
+    kijun    = kwargs.get('kijun', 26)
+    senkou_b = kwargs.get('senkou_b', 52)
 
-    # plot chart type in title
-    pyplot.title('Ichimoku Cloud', loc='right', fontsize=8, color='darkblue')
+    # Plot chart type in title
+    pyplot.title('Ichimoku Kinko Hyo', loc='right', fontsize=6, color='darkblue')
 
-    # calculate ichimoku data
-    tenkan_sen = ((dataframe['High'] + dataframe['Low'])/2).rolling(base).mean()
-    kijun_sen = ((dataframe['High'] + dataframe['Low'])/2).rolling(period).mean()
-    senkou_span_a = ((tenkan_sen + kijun_sen)/2).shift(period)
-    senkou_span_b = ((dataframe['High'] + dataframe['Low'])/2).rolling(period).mean().shift(period)
-    chikou_span = ((dataframe['High'] + dataframe['Low'])/2).shift(-period)
+    # Append null row at the end of the dataframe
+    dataframe = pandas.concat([dataframe, pandas.DataFrame(numpy.zeros((senkou_b,
+        len(dataframe.columns))))]).reset_index(drop=True)
 
-    dataframe['tenkan_sen'] = tenkan_sen
-    dataframe['kijun_sen'] = kijun_sen
-    dataframe['senkou_span_a'] = senkou_span_a
-    dataframe['senkou_span_b'] = senkou_span_b
-    dataframe['chikou_span'] = chikou_span
+    # Calculate ichimoku data
+    dataframe['Tenkan_sen']  = (dataframe['High'].rolling(tenkan).max() + \
+            dataframe['Low'].rolling(tenkan).min()) / 2
+    dataframe['Kijun_sen']   = (dataframe['High'].rolling(kijun).max() + \
+            dataframe['Low'].rolling(kijun).min()) / 2
+    dataframe['Senkou_a']    = ((dataframe['Tenkan_sen'] + \
+            dataframe['Kijun_sen']) / 2).shift(senkou_b)
+    dataframe['Senkou_b']    = ((dataframe['High'].rolling(senkou_b).max() + \
+            dataframe['Low'].rolling(senkou_b).min()) / 2).shift(senkou_b)
+    dataframe['Chikou_span'] = dataframe['Close'].shift(-26)
 
     # Plot the Ichimoku chart
-    pyplot.plot(dataframe['tenkan_sen'], label='Tenkan-Sen',
-            linewidth=0.5, color='darkorange')
-    pyplot.plot(dataframe['kijun_sen'], label='Kijun-Sen',
-            linewidth=0.5, color='purple')
-    pyplot.plot(dataframe['senkou_span_a'], label='Senkou Span A',
-            linewidth=0.5, alpha=0.05, color='grey')
-    pyplot.plot(dataframe['senkou_span_b'], label='Senkou Span B',
-            linewidth=0.75, color='red')
-    pyplot.plot(dataframe['chikou_span'], label='Chikou Span',
+    pyplot.plot(dataframe['Tenkan_sen'], label='Tenkan-sen',
+            linewidth=0.4, color='darkorange')
+    pyplot.plot(dataframe['Kijun_sen'], label='Kijun-Sen',
+            linewidth=0.4, color='purple')
+    pyplot.plot(dataframe['Senkou_a'], label='Senkou Span A',
+            linewidth=0.4, alpha=0.05, color='grey')
+    pyplot.plot(dataframe['Senkou_b'], label='Senkou Span B',
+            linewidth=0.6, color='red')
+    pyplot.plot(dataframe['Chikou_span'], label='Chikou Span',
             linewidth=1, linestyle='dashed', alpha=0.5, color='cyan')
 
     # Plot Kumo (Cloud)
     pyplot.fill_between(dataframe.index,
-        dataframe['senkou_span_a'], dataframe['senkou_span_b'],
-        where=dataframe['senkou_span_a'] >= dataframe['senkou_span_b'],
-        color='orange', alpha=0.2)
-    pyplot.fill_between(dataframe.index,
-        dataframe['senkou_span_a'], dataframe['senkou_span_b'],
-        where=dataframe['senkou_span_a'] < dataframe['senkou_span_b'],
+        dataframe['Senkou_a'], dataframe['Senkou_b'],
+        where=dataframe['Senkou_a'] >= dataframe['Senkou_b'],
         color='grey', alpha=0.2)
+    pyplot.fill_between(dataframe.index,
+        dataframe['Senkou_a'], dataframe['Senkou_b'],
+        where=dataframe['Senkou_a'] < dataframe['Senkou_b'],
+        color='orange', alpha=0.2)
 
     # Show legend on the plot
-    pyplot.legend(loc='upper left', fontsize=8)
+    pyplot.legend(loc='upper left', fontsize=6)
 
     return pyplot
 
@@ -168,7 +172,7 @@ def overlay_vwap(dataframe):
     """
 
     # plot chart type in title
-    pyplot.title('Volume-Weighted Average Price', loc='right', fontsize=8, color='darkblue')
+    pyplot.title('Volume-Weighted Average Price', loc='right', fontsize=6, color='darkblue')
 
     # create VWAP column
     dataframe['VWAP'] = (dataframe['Close'] * dataframe['Volume']).cumsum() \
@@ -178,7 +182,7 @@ def overlay_vwap(dataframe):
     pyplot.plot(dataframe['VWAP'], label='VWAP', linewidth=0.8, color='blue')
 
     # Show legend on the plot
-    pyplot.legend(loc='upper left', fontsize=8)
+    pyplot.legend(loc='upper left', fontsize=6)
 
     return pyplot
 
@@ -209,9 +213,9 @@ if __name__ == "__main__":
 
     # Plot the data
     graph = graph_candlestick(df, symbol=SYMBOL, interval=INTERVAL, period=PERIOD)
-    graph = overlay_bollinger(df)
-    #graph = overlay_ichimoku(df)
-    #graph = overlay_vwap(df)
+    grahp = overlay_vwap(df)
+    #graph = overlay_bollinger(df)
+    graph = overlay_ichimoku(df)
 
     # Save the plot to a PNG file
     pngfile = os.path.expanduser(f'~/public_html/{basename}.png')

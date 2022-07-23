@@ -76,8 +76,8 @@ if __name__ == "__main__":
             # Plot the data
             graph = chart.graph_candlestick(df, symbol=SYMBOL, interval=INTERVAL, period=PERIOD)
             #graph = chart.overlay_bollinger(df)
-            #graph = chart.overlay_ichimoku(df)
-            graph = chart.overlay_vwap(df)
+            graph = chart.overlay_ichimoku(df)
+            #graph = chart.overlay_vwap(df)
 
             # Save the graph to a temporary file
             pngfile = os.path.expanduser(f'{tmpfile}.png')

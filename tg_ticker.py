@@ -17,6 +17,10 @@ import chart
 # Function to get netrc credentials
 def get_netrc_credentials(machine):
     """Fetch netrc credentials."""
+
+    # Read in the netrc file
+    netrc_file = netrc.netrc()
+
     try:
         machine_details = netrc_file.hosts[machine]
         return machine_details[0], machine_details[2]
@@ -52,9 +56,6 @@ if __name__ == "__main__":
         stdin = sys.stdin.readlines()
     else:
         stdin = sys.argv[1:]
-
-    # Read in the netrc file
-    netrc_file = netrc.netrc()
 
     # Fetch telegram credentials
     token = get_netrc_credentials('telegram')[1]

@@ -1,13 +1,7 @@
-#!/bin/env -S python
+#!/bin/env -S python3
 """ Convert a string to rot13. """
 
 import sys
-
-# Take in a string from the command line
-if not sys.stdin.isatty():
-    message = sys.stdin.readlines()
-else:
-    message = sys.argv[1:]
 
 # Convert a string to rot32.
 def rot32(string):
@@ -23,7 +17,15 @@ def rot32(string):
     return string
 
 if __name__ == "__main__":
+
+    # Take in a string from the command line
+    if not sys.stdin.isatty():
+        message = sys.stdin.readlines()
+    else:
+        message = sys.argv[1:]
+
+    # Convert a string to rot32.
     for line in message:
         rot32(line)
-        print()
+
     sys.exit(0)

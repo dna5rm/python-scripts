@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     # Constant Variables
     INTERVAL = "15m"
-    PERIOD   = "14d"
+    PERIOD   = "7d"
 
     # Read task from any type of stdin
     if not sys.stdin.isatty():

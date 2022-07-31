@@ -7,10 +7,15 @@ import os
 import sys
 import textwrap
 import openai
+from openai.api_resources import model
 
 # Function to get netrc credentials
 def get_netrc_credentials(machine):
-    """ Fetch netrc credentials. """
+    """Fetch netrc credentials."""
+
+    # Read in the netrc file
+    netrc_file = netrc.netrc()
+
     try:
         machine_details = netrc_file.hosts[machine]
         return machine_details[0], machine_details[2]
@@ -18,18 +23,32 @@ def get_netrc_credentials(machine):
         return None, None
 
 # Function to ask OpenAI a question
-def get_openai_text(task):
+def get_openai_text(task, **kwargs):
     """ OpenAI query for task. """
-    logging.info("OpenAi task: %s", task)
-    response = openai.Completion.create(
-            model="text-davinci-002",
+
+    # keywords & vars
+    model = kwargs.get('model', 'code-davinci-002')
+
+    # Get OpenAI credentials
+    openai.api_key = get_netrc_credentials("openai")[1]
+
+    if openai.api_key is None:
+        print("No OpenAI credentials found.")
+        sys.exit(1)
+
+    # Get OpenAI response
+    # https://beta.openai.com/docs/models/gpt-3
+    else:
+        logging.info("OpenAi task: %s", task)
+        response = openai.Completion.create(
+            model=model,
             prompt=task,
             temperature=0.7,
             max_tokens=1900,
             top_p=0.9,
             frequency_penalty=0.0,
-            presence_penalty=0.0
-            )
+            presence_penalty=0.0)
+
     return response.choices[0].text
 
 if __name__ == "__main__":
@@ -46,15 +65,9 @@ if __name__ == "__main__":
     logfile = basename + '.log'
     logging.basicConfig(filename=logfile, encoding='utf-8', level=logging.DEBUG)
 
-    # Read in the netrc file
-    netrc_file = netrc.netrc()
-
-    # Get netrc credentials for OpenAI
-    openai.api_key = get_netrc_credentials(basename)[1]
-
     # Get OpenAI response
     if (openai.api_key != 'None') and (message != []):
-        text = get_openai_text(message)
+        text = get_openai_text(message, model='text-davinci-002')
         logging.info(text)
         print(text)
     else:

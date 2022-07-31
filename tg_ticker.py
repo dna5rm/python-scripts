@@ -12,7 +12,7 @@ import sys
 import pandas as pd
 import telegram as tg
 import yfinance as yf
-import chart
+import candlestick_chart as chart
 
 # Function to get netrc credentials
 def get_netrc_credentials(machine):

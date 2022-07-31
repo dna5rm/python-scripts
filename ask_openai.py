@@ -1,5 +1,10 @@
 #!/bin/env -S python3
-""" OpenAI query & response script. """
+"""
+OpenAI query & response script.
+
+Example ~/.netrc file:
+machine openai login api_key password sk-FyXXX...
+"""
 
 import logging
 import netrc

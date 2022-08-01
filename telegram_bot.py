@@ -190,5 +190,5 @@ if __name__ == '__main__':
                 # Do nothing!
                 pass
 
-        # Be nice to the telegram API and sleep for 15 seconds
-        time.sleep(15)
+        # Be nice to the telegram API and sleep for 5 seconds
+        time.sleep(5)

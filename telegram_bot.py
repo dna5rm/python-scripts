@@ -88,7 +88,7 @@ if __name__ == '__main__':
 
             try:
                 # if entities.type == 'bot_command' then send a message to the telegram channel
-                if (update.message.entities[0].type == 'bot_command') and (update.message.chat.type == 'private'):
+                if (update.message.entities[0].type == 'bot_command'): # and (update.message.chat.type == 'private'):
                     if (last_message_id != update.message.message_id) and (last_message_id is not None):
                         last_message_id = update.message.message_id
                         command = update.message.text.split(' ')[0]
@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
                             # test if the user has provided a question
                             if len(update.message.text.split(' ')) > 1:
-                                message = get_openai_text(update.message.text.split(' ')[1])
+                                message = get_openai_text(update.message.text.split(' ')[1], model='text-davinci-002')
                                 bot.sendMessage(chat_id=update.message.chat_id,
                                         text=f"{message}")
                             else:

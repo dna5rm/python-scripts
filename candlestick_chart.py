@@ -24,12 +24,14 @@ def graph_candlestick(dataframe, **kwargs):
     interval = kwargs.get('interval', 'NaN')
     period = kwargs.get('period', 'NaN')
 
+    name = yfinance.Ticker(symbol).info['shortName']
+
     xdate = [datetime.strptime(x[:-6],
         '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d\n%A') for x in dataframe.Datetime]
 
     pyplot.figure(figsize=(12,3), dpi=80)
     pyplot.style.use('bmh')
-    pyplot.title(f'{symbol}', loc='left')
+    pyplot.title(f'{symbol} - {name}', loc='left')
 
     pyplot.xticks(numpy.arange(0, len(dataframe), step=28), xdate[::28], fontsize=8, rotation=45)
 

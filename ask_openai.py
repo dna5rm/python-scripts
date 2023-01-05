@@ -138,6 +138,7 @@ if __name__ == "__main__":
     # Initialize logging
     logfile = basename + '.log'
     logging.basicConfig(filename=logfile, encoding='utf-8', level=logging.DEBUG)
+    logging.info('-' * 80)
 
     # Get OpenAI response
     if (openai.api_key != 'None') and (message != []):

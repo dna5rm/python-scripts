@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
     # Get OpenAI response
     if (openai.api_key != 'None') and (message != []):
-        ctitle = "Select OpenAI model to use..."
+        ctitle = "Select OpenAI text model to use..."
 
         # Extract the IDs that match the specified pattern
         pattern = re.compile(r"^text-([a-z]+)-[0-9]+$")

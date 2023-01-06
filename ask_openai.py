@@ -158,6 +158,7 @@ if __name__ == "__main__":
         if model != None:
             text = get_openai_text(message, model=model)
             logging.info(text)
+            print(f"\033[44m\033[1mModel: {model}\033[0m\n")
             print(text)
         else:
             print("No GPT3 model selected...")
